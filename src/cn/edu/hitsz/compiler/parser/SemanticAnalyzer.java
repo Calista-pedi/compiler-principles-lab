@@ -1,37 +1,64 @@
 package cn.edu.hitsz.compiler.parser;
 
-import cn.edu.hitsz.compiler.NotImplementedException;
 import cn.edu.hitsz.compiler.lexer.Token;
 import cn.edu.hitsz.compiler.parser.table.Production;
 import cn.edu.hitsz.compiler.parser.table.Status;
+import cn.edu.hitsz.compiler.symtab.SourceCodeType;
 import cn.edu.hitsz.compiler.symtab.SymbolTable;
 
-// TODO: 实验三: 实现语义分析
+import java.util.ArrayList;
+import java.util.List;
+
 public class SemanticAnalyzer implements ActionObserver {
+    private SymbolTable symbolTable;
+    private final List<Symbol> symbolStack = new ArrayList<>();
 
     @Override
     public void whenAccept(Status currentStatus) {
-        // TODO: 该过程在遇到 Accept 时要采取的代码动作
-        throw new NotImplementedException();
+        symbolStack.clear();
     }
 
     @Override
     public void whenReduce(Status currentStatus, Production production) {
-        // TODO: 该过程在遇到 reduce production 时要采取的代码动作
-        throw new NotImplementedException();
+        final var bodySize = production.body().size();
+        final var body = symbolStack.subList(symbolStack.size() - bodySize, symbolStack.size());
+        final var head = new Symbol(production.head().toString(), null, null);
+
+        switch (production.toString()) {
+            case "D -> int" -> head.type = SourceCodeType.Int;
+            case "S -> D id" -> {
+                final var type = body.get(0).type;
+                final var name = body.get(1).text;
+                symbolTable.get(name).setType(type);
+            }
+            default -> {
+                // Other productions do not change declared symbol types.
+            }
+        }
+
+        body.clear();
+        symbolStack.add(head);
     }
 
     @Override
     public void whenShift(Status currentStatus, Token currentToken) {
-        // TODO: 该过程在遇到 shift 时要采取的代码动作
-        throw new NotImplementedException();
+        symbolStack.add(new Symbol(currentToken.getKindId(), currentToken.getText(), null));
     }
 
     @Override
     public void setSymbolTable(SymbolTable table) {
-        // TODO: 设计你可能需要的符号表存储结构
-        // 如果需要使用符号表的话, 可以将它或者它的一部分信息存起来, 比如使用一个成员变量存储
-        throw new NotImplementedException();
+        this.symbolTable = table;
+    }
+
+    private static class Symbol {
+        private Symbol(String name, String text, SourceCodeType type) {
+            this.name = name;
+            this.text = text;
+            this.type = type;
+        }
+
+        private final String name;
+        private final String text;
+        private SourceCodeType type;
     }
 }
-
