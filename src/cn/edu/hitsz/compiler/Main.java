@@ -49,11 +49,11 @@ public class Main {
         final var productionCollector = new ProductionCollector(GrammarInfo.getBeginProduction());
         parser.registerObserver(productionCollector);
 
-        // 加入用作语义检查的 Observer
+        // 加入用于语义检查的 Observer
         final var semanticAnalyzer = new SemanticAnalyzer();
         parser.registerObserver(semanticAnalyzer);
 
-        // 加入用作 IR 生成的 Observer
+        // 加入用于 IR 生成的 Observer
         final var irGenerator = new IRGenerator();
         parser.registerObserver(irGenerator);
 
@@ -68,12 +68,15 @@ public class Main {
 
         // 模拟执行 IR 并输出结果
         final var emulator = IREmulator.load(instructions);
-        FileUtils.writeFile(FilePathConfig.EMULATE_RESULT, emulator.execute().map(Objects::toString).orElse("No return value"));
+        FileUtils.writeFile(
+            FilePathConfig.EMULATE_RESULT,
+            emulator.execute().map(Objects::toString).orElse("No return value")
+        );
 
-        // 由 IR 生成汇编
-    //     final var asmGenerator = new AssemblyGenerator();
-    //     asmGenerator.loadIR(instructions);
-    //     asmGenerator.run();
-    //     asmGenerator.dump(FilePathConfig.ASSEMBLY_LANGUAGE_PATH);
+        // 用 IR 生成汇编
+        final var asmGenerator = new AssemblyGenerator();
+        asmGenerator.loadIR(instructions);
+        asmGenerator.run();
+        asmGenerator.dump(FilePathConfig.ASSEMBLY_LANGUAGE_PATH);
     }
 }
